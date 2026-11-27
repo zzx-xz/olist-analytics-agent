@@ -1,0 +1,1787 @@
+{
+  "benchmark": "benchmark.json",
+  "evaluation_mode": "local_rescore_of_saved_agent_sql",
+  "total_cases": 12,
+  "sql_execution_rate": 1.0,
+  "sql_result_match_rate": 1.0,
+  "median_latency_seconds": 8.835,
+  "token_usage_total": {
+    "prompt_tokens": 62243,
+    "completion_tokens": 5527,
+    "total_tokens": 67770
+  },
+  "cases": [
+    {
+      "id": "orders_total",
+      "question": "这份数据一共有多少个不同订单？",
+      "tool_steps": [
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT COUNT(DISTINCT order_id) AS distinct_orders, COUNT(*) AS rows_in_orders FROM orders"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "order_count": 99441
+        }
+      ],
+      "expected_rows": [
+        {
+          "order_count": 99441
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT COUNT(DISTINCT order_id) AS distinct_orders, COUNT(*) AS rows_in_orders FROM orders",
+      "answer": "**共有 99,441 个不同订单。**\n\n- 口径：`SELECT COUNT(DISTINCT order_id) FROM orders`（指标目录中的「Order count」定义）。\n- 覆盖全部订单状态（未按状态筛选）。\n- `orders` 表共 99,441 行，与去重订单数一致，说明订单表一个订单一行，不存在重复。",
+      "latency_seconds": 7.205,
+      "token_usage": {
+        "prompt_tokens": 4765,
+        "completion_tokens": 240,
+        "total_tokens": 5005
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT COUNT(DISTINCT order_id) AS distinct_orders, COUNT(*) AS rows_in_orders FROM orders",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "distinct_orders": 99441,
+              "rows_in_orders": 99441
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "order_count": 99441
+            }
+          ],
+          "expected_rows": [
+            {
+              "order_count": 99441
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "order_count": 99441
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "order_count": 99441
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 1,
+        "total_values": 1,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "gmv_total",
+      "question": "按项目定义，平台总 GMV 是多少？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT SUM(CAST(payment_value AS REAL)) AS gmv, COUNT(*) AS payment_rows, COUNT(DISTINCT order_id) AS orders_with_payment FROM payments;"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "gmv": 16008872.12
+        }
+      ],
+      "expected_rows": [
+        {
+          "gmv": 16008872.12
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT SUM(CAST(payment_value AS REAL)) AS gmv, COUNT(*) AS payment_rows, COUNT(DISTINCT order_id) AS orders_with_payment FROM payments;",
+      "answer": "按项目定义，**平台总 GMV 为 R$ 16,008,872.12**。\n\n- 统计口径：`payments` 表中 `payment_value` 的总和\n- 未按订单状态或其他条件筛选\n- 覆盖 103,886 条支付记录、99,440 个有支付记录的订单\n- GMV 是支付金额，并非利润；也不等同于 `order_items.price` 的商品销售额\n\n证据：`SELECT SUM(CAST(payment_value AS REAL)) FROM payments`。",
+      "latency_seconds": 8.269,
+      "token_usage": {
+        "prompt_tokens": 4797,
+        "completion_tokens": 389,
+        "total_tokens": 5186
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT SUM(CAST(payment_value AS REAL)) AS gmv, COUNT(*) AS payment_rows, COUNT(DISTINCT order_id) AS orders_with_payment FROM payments;",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "gmv": 16008872.12,
+              "payment_rows": 103886,
+              "orders_with_payment": 99440
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "gmv": 16008872.12
+            }
+          ],
+          "expected_rows": [
+            {
+              "gmv": 16008872.12
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "gmv": 16008872.12
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "gmv": 16008872.12
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 1,
+        "total_values": 1,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "repeat_user_rate",
+      "question": "复购用户率是多少？请按真实用户 customer_unique_id 计算。",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT COUNT(*) AS users_with_orders,\n       SUM(CASE WHEN n >= 2 THEN 1 ELSE 0 END) AS repeat_users,\n       ROUND(1.0 * SUM(CASE WHEN n >= 2 THEN 1 ELSE 0 END) / COUNT(*), 4) AS repeat_rate\nFROM (\n  SELECT c.customer_unique_id, COUNT(DISTINCT o.order_id) AS n\n  FROM orders o\n  JOIN customers c ON o.customer_id = c.customer_id\n  GROUP BY c.customer_unique_id\n)"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "repeat_user_rate": 3.12
+        }
+      ],
+      "expected_rows": [
+        {
+          "repeat_user_rate": 3.12
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT COUNT(*) AS users_with_orders,\n       SUM(CASE WHEN n >= 2 THEN 1 ELSE 0 END) AS repeat_users,\n       ROUND(1.0 * SUM(CASE WHEN n >= 2 THEN 1 ELSE 0 END) / COUNT(*), 4) AS repeat_rate\nFROM (\n  SELECT c.customer_unique_id, COUNT(DISTINCT o.order_id) AS n\n  FROM orders o\n  JOIN customers c ON o.customer_id = c.customer_id\n  GROUP BY c.customer_unique_id\n)",
+      "answer": "**复购用户率（Repeat customer rate）≈ 3.12%**\n\n| 指标 | 数值 |\n|---|---|\n| 有过订单的用户数（按 customer_unique_id 去重） | 96,096 |\n| 其中下单 ≥2 个不同订单的用户数 | 2,997 |\n| 复购用户率 | 2,997 / 96,096 ≈ **3.12%** |\n\n口径说明：\n- 定义来自指标目录：至少 2 个不同 order_id 的用户数 ÷ 至少 1 个订单的用户数，用户身份用 `customers.customer_unique_id`。\n- 连接方式：`orders.customer_id = customers.customer_id`，订单数按 `COUNT(DISTINCT orders.order_id)` 计算。\n- 未做状态过滤（包含全部订单状态，与原项目口径一致）；分母为至少有一笔订单记录的唯一用户。\n\n数据来源：orders + customers 两表查询。需注意：这只是观察到的低复购比例，不能据此推断原因或因果关系。",
+      "latency_seconds": 9.916,
+      "token_usage": {
+        "prompt_tokens": 4919,
+        "completion_tokens": 438,
+        "total_tokens": 5357
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT COUNT(*) AS users_with_orders,\n       SUM(CASE WHEN n >= 2 THEN 1 ELSE 0 END) AS repeat_users,\n       ROUND(1.0 * SUM(CASE WHEN n >= 2 THEN 1 ELSE 0 END) / COUNT(*), 4) AS repeat_rate\nFROM (\n  SELECT c.customer_unique_id, COUNT(DISTINCT o.order_id) AS n\n  FROM orders o\n  JOIN customers c ON o.customer_id = c.customer_id\n  GROUP BY c.customer_unique_id\n)",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "users_with_orders": 96096,
+              "repeat_users": 2997,
+              "repeat_rate": 0.0312
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "repeat_user_rate": 3.12
+            }
+          ],
+          "expected_rows": [
+            {
+              "repeat_user_rate": 3.12
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "repeat_user_rate": 3.12
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "repeat_user_rate": 3.12
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 1,
+        "total_values": 1,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "late_delivery_rate",
+      "question": "总体延迟送达率是多少？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT COUNT(*) AS delivered_with_dates,\n       SUM(CASE WHEN datetime(order_delivered_customer_date) > datetime(order_estimated_delivery_date) THEN 1 ELSE 0 END) AS late_orders,\n       ROUND(1.0 * SUM(CASE WHEN datetime(order_delivered_customer_date) > datetime(order_estimated_delivery_date) THEN 1 ELSE 0 END) / COUNT(*), 4) AS late_delivery_rate\nFROM orders\nWHERE order_status = 'delivered'\n  AND order_purchase_timestamp IS NOT NULL\n  AND order_delivered_customer_date IS NOT NULL\n  AND order_estimated_delivery_date IS NOT NULL;"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "delayed_order_rate": 8.11
+        }
+      ],
+      "expected_rows": [
+        {
+          "delayed_order_rate": 8.11
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT COUNT(*) AS delivered_with_dates,\n       SUM(CASE WHEN datetime(order_delivered_customer_date) > datetime(order_estimated_delivery_date) THEN 1 ELSE 0 END) AS late_orders,\n       ROUND(1.0 * SUM(CASE WHEN datetime(order_delivered_customer_date) > datetime(order_estimated_delivery_date) THEN 1 ELSE 0 END) / COUNT(*), 4) AS late_delivery_rate\nFROM orders\nWHERE order_status = 'delivered'\n  AND order_purchase_timestamp IS NOT NULL\n  AND order_delivered_customer_date IS NOT NULL\n  AND order_estimated_delivery_date IS NOT NULL;",
+      "answer": "**总体延迟送达率约为 8.11%**\n\n- 延迟订单：7,826 单\n- 分母（已送达且购买时间、实际送达时间、预计送达时间均非空的订单）：96,470 单\n- 口径：`order_status = 'delivered'`，实际送达时间晚于预计送达日期即计为延迟（依据指标目录中 “Late delivery rate” 的定义）\n\n数据来源：`orders` 表（单表单次查询，无需关联其他表）。",
+      "latency_seconds": 8.048,
+      "token_usage": {
+        "prompt_tokens": 4960,
+        "completion_tokens": 356,
+        "total_tokens": 5316
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT COUNT(*) AS delivered_with_dates,\n       SUM(CASE WHEN datetime(order_delivered_customer_date) > datetime(order_estimated_delivery_date) THEN 1 ELSE 0 END) AS late_orders,\n       ROUND(1.0 * SUM(CASE WHEN datetime(order_delivered_customer_date) > datetime(order_estimated_delivery_date) THEN 1 ELSE 0 END) / COUNT(*), 4) AS late_delivery_rate\nFROM orders\nWHERE order_status = 'delivered'\n  AND order_purchase_timestamp IS NOT NULL\n  AND order_delivered_customer_date IS NOT NULL\n  AND order_estimated_delivery_date IS NOT NULL;",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "delivered_with_dates": 96470,
+              "late_orders": 7826,
+              "late_delivery_rate": 0.0811
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "delayed_order_rate": 8.11
+            }
+          ],
+          "expected_rows": [
+            {
+              "delayed_order_rate": 8.11
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "delayed_order_rate": 8.11
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "delayed_order_rate": 8.11
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 1,
+        "total_values": 1,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "review_average",
+      "question": "平均评价分是多少？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT ROUND(AVG(CAST(review_score AS REAL)), 2) AS avg_review_score, COUNT(*) AS review_rows, SUM(CASE WHEN review_score IS NULL OR TRIM(review_score) = '' THEN 1 ELSE 0 END) AS null_scores FROM reviews"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "average_review_score": 4.09
+        }
+      ],
+      "expected_rows": [
+        {
+          "average_review_score": 4.09
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT ROUND(AVG(CAST(review_score AS REAL)), 2) AS avg_review_score, COUNT(*) AS review_rows, SUM(CASE WHEN review_score IS NULL OR TRIM(review_score) = '' THEN 1 ELSE 0 END) AS null_scores FROM reviews",
+      "answer": "**平均评价分 = 4.09 分**（满分 5 分）。\n\n- 数据来源：`reviews` 表的 `review_score` 字段\n- 分母：全部 99,224 条评价记录（无空值评分）\n- 未按订单状态筛选，未按评论去重\n\n这只是评分的描述性统计，不涉及评分与任何因素的因果关系。",
+      "latency_seconds": 7.805,
+      "token_usage": {
+        "prompt_tokens": 4767,
+        "completion_tokens": 244,
+        "total_tokens": 5011
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT ROUND(AVG(CAST(review_score AS REAL)), 2) AS avg_review_score, COUNT(*) AS review_rows, SUM(CASE WHEN review_score IS NULL OR TRIM(review_score) = '' THEN 1 ELSE 0 END) AS null_scores FROM reviews",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "avg_review_score": 4.09,
+              "review_rows": 99224,
+              "null_scores": 0
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "average_review_score": 4.09
+            }
+          ],
+          "expected_rows": [
+            {
+              "average_review_score": 4.09
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "average_review_score": 4.09
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "average_review_score": 4.09
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 1,
+        "total_values": 1,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "negative_review_rate",
+      "question": "项目把评分不高于 2 分定义为差评，差评率是多少？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT COUNT(DISTINCT order_id) AS orders_with_review,\n       COUNT(DISTINCT CASE WHEN CAST(review_score AS REAL) <= 2 THEN order_id END) AS negative_orders,\n       ROUND(1.0 * COUNT(DISTINCT CASE WHEN CAST(review_score AS REAL) <= 2 THEN order_id END) / COUNT(DISTINCT order_id), 4) AS negative_rate\nFROM reviews\nWHERE review_score IS NOT NULL"
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT COUNT(*) AS review_rows, COUNT(DISTINCT review_id) AS distinct_review_ids, COUNT(DISTINCT order_id) AS distinct_orders FROM reviews WHERE review_score IS NOT NULL"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "negative_review_rate": 14.73
+        }
+      ],
+      "expected_rows": [
+        {
+          "negative_review_rate": 14.73
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT COUNT(DISTINCT order_id) AS orders_with_review,\n       COUNT(DISTINCT CASE WHEN CAST(review_score AS REAL) <= 2 THEN order_id END) AS negative_orders,\n       ROUND(1.0 * COUNT(DISTINCT CASE WHEN CAST(review_score AS REAL) <= 2 THEN order_id END) / COUNT(DISTINCT order_id), 4) AS negative_rate\nFROM reviews\nWHERE review_score IS NOT NULL",
+      "answer": "**差评率 ≈ 14.73%**\n\n口径（来自指标目录「Negative review rate」）：\n- 分子：有非空评分的订单中，评分 ≤ 2 的订单数 = **14,533**\n- 分母：有非空评分的订单数（按 `reviews.order_id` 去重）= **98,673**\n- 说明：reviews 表有 99,224 行评分记录、98,673 个不同订单（少量订单有多条评价），因此按订单去重计算，避免重复计数；未按订单状态过滤。\n\n证据查询：`reviews` 表，`COUNT(DISTINCT order_id)` 与 `CAST(review_score AS REAL) <= 2`。",
+      "latency_seconds": 10.904,
+      "token_usage": {
+        "prompt_tokens": 7529,
+        "completion_tokens": 561,
+        "total_tokens": 8090
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT COUNT(DISTINCT order_id) AS orders_with_review,\n       COUNT(DISTINCT CASE WHEN CAST(review_score AS REAL) <= 2 THEN order_id END) AS negative_orders,\n       ROUND(1.0 * COUNT(DISTINCT CASE WHEN CAST(review_score AS REAL) <= 2 THEN order_id END) / COUNT(DISTINCT order_id), 4) AS negative_rate\nFROM reviews\nWHERE review_score IS NOT NULL",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "orders_with_review": 98673,
+              "negative_orders": 14533,
+              "negative_rate": 0.1473
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "negative_review_rate": 14.73
+            }
+          ],
+          "expected_rows": [
+            {
+              "negative_review_rate": 14.73
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "negative_review_rate": 14.73
+            }
+          ],
+          "comparison_error": null
+        },
+        {
+          "index": 1,
+          "sql": "SELECT COUNT(*) AS review_rows, COUNT(DISTINCT review_id) AS distinct_review_ids, COUNT(DISTINCT order_id) AS distinct_orders FROM reviews WHERE review_score IS NOT NULL",
+          "result_match": false,
+          "actual_rows": null,
+          "expected_rows": [
+            {
+              "negative_review_rate": 14.73
+            }
+          ],
+          "comparison_error": "'Expected one of these result columns: negative_orders, negative_review_orders; available columns: review_rows, distinct_review_ids, distinct_orders'"
+        }
+      ],
+      "last_query_result_match": false,
+      "compared_expected_rows": [
+        {
+          "negative_review_rate": 14.73
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 1,
+        "total_values": 1,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "state_gmv_top5",
+      "question": "按州汇总 GMV，最高的 5 个州和金额分别是什么？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT c.customer_state, ROUND(SUM(CAST(p.payment_value AS REAL)), 2) AS gmv\nFROM payments p\nJOIN orders o ON p.order_id = o.order_id\nJOIN customers c ON o.customer_id = c.customer_id\nGROUP BY c.customer_state\nORDER BY gmv DESC\nLIMIT 5"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "customer_state": "SP",
+          "gmv": 5998226.96
+        },
+        {
+          "customer_state": "RJ",
+          "gmv": 2144379.69
+        },
+        {
+          "customer_state": "MG",
+          "gmv": 1872257.26
+        },
+        {
+          "customer_state": "RS",
+          "gmv": 890898.54
+        },
+        {
+          "customer_state": "PR",
+          "gmv": 811156.38
+        }
+      ],
+      "expected_rows": [
+        {
+          "customer_state": "SP",
+          "gmv": 5998226.96
+        },
+        {
+          "customer_state": "RJ",
+          "gmv": 2144379.69
+        },
+        {
+          "customer_state": "MG",
+          "gmv": 1872257.26
+        },
+        {
+          "customer_state": "RS",
+          "gmv": 890898.54
+        },
+        {
+          "customer_state": "PR",
+          "gmv": 811156.38
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT c.customer_state, ROUND(SUM(CAST(p.payment_value AS REAL)), 2) AS gmv\nFROM payments p\nJOIN orders o ON p.order_id = o.order_id\nJOIN customers c ON o.customer_id = c.customer_id\nGROUP BY c.customer_state\nORDER BY gmv DESC\nLIMIT 5",
+      "answer": "**GMV 最高的 5 个州**\n\n| 排名 | 州 | GMV |\n|---|---|---|\n| 1 | SP | 5,998,226.96 |\n| 2 | RJ | 2,144,379.69 |\n| 3 | MG | 1,872,257.26 |\n| 4 | RS | 890,898.54 |\n| 5 | PR | 811,156.38 |\n\n口径说明：GMV = `payments.payment_value` 求和（按指标目录定义），按客户所在州 `customers.customer_state` 分组；数据来源为 payments → orders → customers 关联。未按订单状态筛选（包含全部状态），且 payments 无支付记录、无客户州信息的订单不计入分母。州属性来自客户地址，不代表订单履约地。\n\n查询证据：`SELECT c.customer_state, SUM(CAST(p.payment_value AS REAL)) ... GROUP BY c.customer_state ORDER BY gmv DESC LIMIT 5`",
+      "latency_seconds": 8.744,
+      "token_usage": {
+        "prompt_tokens": 4921,
+        "completion_tokens": 432,
+        "total_tokens": 5353
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT c.customer_state, ROUND(SUM(CAST(p.payment_value AS REAL)), 2) AS gmv\nFROM payments p\nJOIN orders o ON p.order_id = o.order_id\nJOIN customers c ON o.customer_id = c.customer_id\nGROUP BY c.customer_state\nORDER BY gmv DESC\nLIMIT 5",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "customer_state": "SP",
+              "gmv": 5998226.96
+            },
+            {
+              "customer_state": "RJ",
+              "gmv": 2144379.69
+            },
+            {
+              "customer_state": "MG",
+              "gmv": 1872257.26
+            },
+            {
+              "customer_state": "RS",
+              "gmv": 890898.54
+            },
+            {
+              "customer_state": "PR",
+              "gmv": 811156.38
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "customer_state": "SP",
+              "gmv": 5998226.96
+            },
+            {
+              "customer_state": "RJ",
+              "gmv": 2144379.69
+            },
+            {
+              "customer_state": "MG",
+              "gmv": 1872257.26
+            },
+            {
+              "customer_state": "RS",
+              "gmv": 890898.54
+            },
+            {
+              "customer_state": "PR",
+              "gmv": 811156.38
+            }
+          ],
+          "expected_rows": [
+            {
+              "customer_state": "SP",
+              "gmv": 5998226.96
+            },
+            {
+              "customer_state": "RJ",
+              "gmv": 2144379.69
+            },
+            {
+              "customer_state": "MG",
+              "gmv": 1872257.26
+            },
+            {
+              "customer_state": "RS",
+              "gmv": 890898.54
+            },
+            {
+              "customer_state": "PR",
+              "gmv": 811156.38
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "customer_state": "SP",
+              "gmv": 5998226.96
+            },
+            {
+              "customer_state": "RJ",
+              "gmv": 2144379.69
+            },
+            {
+              "customer_state": "MG",
+              "gmv": 1872257.26
+            },
+            {
+              "customer_state": "RS",
+              "gmv": 890898.54
+            },
+            {
+              "customer_state": "PR",
+              "gmv": 811156.38
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "customer_state": "SP",
+          "gmv": 5998226.96
+        },
+        {
+          "customer_state": "RJ",
+          "gmv": 2144379.69
+        },
+        {
+          "customer_state": "MG",
+          "gmv": 1872257.26
+        },
+        {
+          "customer_state": "RS",
+          "gmv": 890898.54
+        },
+        {
+          "customer_state": "PR",
+          "gmv": 811156.38
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 10,
+        "total_values": 10,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "monthly_orders_top5",
+      "question": "按下单月份统计订单数，订单数最高的 5 个月是哪些？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS month, COUNT(DISTINCT order_id) AS order_count FROM orders WHERE order_purchase_timestamp IS NOT NULL GROUP BY month ORDER BY order_count DESC LIMIT 5"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "order_month": "2017-11",
+          "order_count": 7544
+        },
+        {
+          "order_month": "2018-01",
+          "order_count": 7269
+        },
+        {
+          "order_month": "2018-03",
+          "order_count": 7211
+        },
+        {
+          "order_month": "2018-04",
+          "order_count": 6939
+        },
+        {
+          "order_month": "2018-05",
+          "order_count": 6873
+        }
+      ],
+      "expected_rows": [
+        {
+          "order_month": "2017-11",
+          "order_count": 7544
+        },
+        {
+          "order_month": "2018-01",
+          "order_count": 7269
+        },
+        {
+          "order_month": "2018-03",
+          "order_count": 7211
+        },
+        {
+          "order_month": "2018-04",
+          "order_count": 6939
+        },
+        {
+          "order_month": "2018-05",
+          "order_count": 6873
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS month, COUNT(DISTINCT order_id) AS order_count FROM orders WHERE order_purchase_timestamp IS NOT NULL GROUP BY month ORDER BY order_count DESC LIMIT 5",
+      "answer": "按 `orders.order_purchase_timestamp` 的下单月份分组，统计去重订单数（`COUNT(DISTINCT order_id)`，包含全部订单状态，未按状态过滤），订单数最高的 5 个月为：\n\n| 排名 | 月份 | 订单数 |\n|---|---|---|\n| 1 | 2017-11 | 7,544 |\n| 2 | 2018-01 | 7,269 |\n| 3 | 2018-03 | 7,211 |\n| 4 | 2018-04 | 6,939 |\n| 5 | 2018-05 | 6,873 |\n\n数据来源：`orders` 表（按 `order_purchase_timestamp` 的 `YYYY-MM` 分组）。",
+      "latency_seconds": 9.015,
+      "token_usage": {
+        "prompt_tokens": 4841,
+        "completion_tokens": 317,
+        "total_tokens": 5158
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS month, COUNT(DISTINCT order_id) AS order_count FROM orders WHERE order_purchase_timestamp IS NOT NULL GROUP BY month ORDER BY order_count DESC LIMIT 5",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "month": "2017-11",
+              "order_count": 7544
+            },
+            {
+              "month": "2018-01",
+              "order_count": 7269
+            },
+            {
+              "month": "2018-03",
+              "order_count": 7211
+            },
+            {
+              "month": "2018-04",
+              "order_count": 6939
+            },
+            {
+              "month": "2018-05",
+              "order_count": 6873
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "order_month": "2017-11",
+              "order_count": 7544
+            },
+            {
+              "order_month": "2018-01",
+              "order_count": 7269
+            },
+            {
+              "order_month": "2018-03",
+              "order_count": 7211
+            },
+            {
+              "order_month": "2018-04",
+              "order_count": 6939
+            },
+            {
+              "order_month": "2018-05",
+              "order_count": 6873
+            }
+          ],
+          "expected_rows": [
+            {
+              "order_month": "2017-11",
+              "order_count": 7544
+            },
+            {
+              "order_month": "2018-01",
+              "order_count": 7269
+            },
+            {
+              "order_month": "2018-03",
+              "order_count": 7211
+            },
+            {
+              "order_month": "2018-04",
+              "order_count": 6939
+            },
+            {
+              "order_month": "2018-05",
+              "order_count": 6873
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "order_month": "2017-11",
+              "order_count": 7544
+            },
+            {
+              "order_month": "2018-01",
+              "order_count": 7269
+            },
+            {
+              "order_month": "2018-03",
+              "order_count": 7211
+            },
+            {
+              "order_month": "2018-04",
+              "order_count": 6939
+            },
+            {
+              "order_month": "2018-05",
+              "order_count": 6873
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "order_month": "2017-11",
+          "order_count": 7544
+        },
+        {
+          "order_month": "2018-01",
+          "order_count": 7269
+        },
+        {
+          "order_month": "2018-03",
+          "order_count": 7211
+        },
+        {
+          "order_month": "2018-04",
+          "order_count": 6939
+        },
+        {
+          "order_month": "2018-05",
+          "order_count": 6873
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 10,
+        "total_values": 10,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "payment_type_gmv",
+      "question": "不同支付方式各自贡献了多少 GMV？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT payment_type, COUNT(*) AS payment_rows, ROUND(SUM(CAST(payment_value AS REAL)), 2) AS gmv, ROUND(100.0 * SUM(CAST(payment_value AS REAL)) / (SELECT SUM(CAST(payment_value AS REAL)) FROM payments), 2) AS gmv_share_pct FROM payments GROUP BY payment_type ORDER BY gmv DESC"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "payment_type": "credit_card",
+          "gmv": 12542084.19
+        },
+        {
+          "payment_type": "boleto",
+          "gmv": 2869361.27
+        },
+        {
+          "payment_type": "voucher",
+          "gmv": 379436.87
+        },
+        {
+          "payment_type": "debit_card",
+          "gmv": 217989.79
+        },
+        {
+          "payment_type": "not_defined",
+          "gmv": 0.0
+        }
+      ],
+      "expected_rows": [
+        {
+          "payment_type": "credit_card",
+          "gmv": 12542084.19
+        },
+        {
+          "payment_type": "boleto",
+          "gmv": 2869361.27
+        },
+        {
+          "payment_type": "voucher",
+          "gmv": 379436.87
+        },
+        {
+          "payment_type": "debit_card",
+          "gmv": 217989.79
+        },
+        {
+          "payment_type": "not_defined",
+          "gmv": 0.0
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT payment_type, COUNT(*) AS payment_rows, ROUND(SUM(CAST(payment_value AS REAL)), 2) AS gmv, ROUND(100.0 * SUM(CAST(payment_value AS REAL)) / (SELECT SUM(CAST(payment_value AS REAL)) FROM payments), 2) AS gmv_share_pct FROM payments GROUP BY payment_type ORDER BY gmv DESC",
+      "answer": "**各支付方式的 GMV 贡献**（GMV = payments.payment_value 求和，按 payment_type 分组；包含全部订单状态，未按状态筛选）\n\n| 支付方式 | 支付记录数 | GMV (BRL) | 占比 |\n|---|---:|---:|---:|\n| credit_card 信用卡 | 76,795 | 12,542,084.19 | 78.34% |\n| boleto 银行票据 | 19,784 | 2,869,361.27 | 17.92% |\n| voucher 代金券 | 5,775 | 379,436.87 | 2.37% |\n| debit_card 借记卡 | 1,529 | 217,989.79 | 1.36% |\n| not_defined 未定义 | 3 | 0.00 | 0.00% |\n| **合计** | **103,886** | **16,008,872.12** | **100%** |\n\n说明：\n- 分母为全部支付记录（payments 表，一行一笔支付，同一订单可有多笔），因此上表是「支付记录层面」的 GMV 拆分，而非订单数；有支付记录的订单总数为 99,440 笔。\n- 部分订单会用多张代金券+信用卡组合支付，所以各方式金额相加等于全量 GMV，但占比不能理解为「订单占比」。\n- voucher 常见于与信用卡叠加使用，具体叠加情况需另查；GMV 不等于利润。\n\n数据来源：`payments` 表（payment_type、payment_value），按 payment_type 聚合。",
+      "latency_seconds": 9.353,
+      "token_usage": {
+        "prompt_tokens": 5053,
+        "completion_tokens": 579,
+        "total_tokens": 5632
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT payment_type, COUNT(*) AS payment_rows, ROUND(SUM(CAST(payment_value AS REAL)), 2) AS gmv, ROUND(100.0 * SUM(CAST(payment_value AS REAL)) / (SELECT SUM(CAST(payment_value AS REAL)) FROM payments), 2) AS gmv_share_pct FROM payments GROUP BY payment_type ORDER BY gmv DESC",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "payment_type": "credit_card",
+              "payment_rows": 76795,
+              "gmv": 12542084.19,
+              "gmv_share_pct": 78.34
+            },
+            {
+              "payment_type": "boleto",
+              "payment_rows": 19784,
+              "gmv": 2869361.27,
+              "gmv_share_pct": 17.92
+            },
+            {
+              "payment_type": "voucher",
+              "payment_rows": 5775,
+              "gmv": 379436.87,
+              "gmv_share_pct": 2.37
+            },
+            {
+              "payment_type": "debit_card",
+              "payment_rows": 1529,
+              "gmv": 217989.79,
+              "gmv_share_pct": 1.36
+            },
+            {
+              "payment_type": "not_defined",
+              "payment_rows": 3,
+              "gmv": 0.0,
+              "gmv_share_pct": 0.0
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "payment_type": "credit_card",
+              "gmv": 12542084.19
+            },
+            {
+              "payment_type": "boleto",
+              "gmv": 2869361.27
+            },
+            {
+              "payment_type": "voucher",
+              "gmv": 379436.87
+            },
+            {
+              "payment_type": "debit_card",
+              "gmv": 217989.79
+            },
+            {
+              "payment_type": "not_defined",
+              "gmv": 0.0
+            }
+          ],
+          "expected_rows": [
+            {
+              "payment_type": "credit_card",
+              "gmv": 12542084.19
+            },
+            {
+              "payment_type": "boleto",
+              "gmv": 2869361.27
+            },
+            {
+              "payment_type": "voucher",
+              "gmv": 379436.87
+            },
+            {
+              "payment_type": "debit_card",
+              "gmv": 217989.79
+            },
+            {
+              "payment_type": "not_defined",
+              "gmv": 0.0
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "payment_type": "credit_card",
+              "gmv": 12542084.19
+            },
+            {
+              "payment_type": "boleto",
+              "gmv": 2869361.27
+            },
+            {
+              "payment_type": "voucher",
+              "gmv": 379436.87
+            },
+            {
+              "payment_type": "debit_card",
+              "gmv": 217989.79
+            },
+            {
+              "payment_type": "not_defined",
+              "gmv": 0.0
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "payment_type": "credit_card",
+          "gmv": 12542084.19
+        },
+        {
+          "payment_type": "boleto",
+          "gmv": 2869361.27
+        },
+        {
+          "payment_type": "voucher",
+          "gmv": 379436.87
+        },
+        {
+          "payment_type": "debit_card",
+          "gmv": 217989.79
+        },
+        {
+          "payment_type": "not_defined",
+          "gmv": 0.0
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 10,
+        "total_values": 10,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "category_sales_top5",
+      "question": "按商品销售额排序，销售额最高的 5 个品类是什么？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT COALESCE(ct.product_category_name_english, p.product_category_name, 'unknown') AS category,\n       ROUND(SUM(CAST(oi.price AS REAL)), 2) AS product_sales,\n       COUNT(*) AS item_rows\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nLEFT JOIN category_translation ct ON p.product_category_name = ct.product_category_name\nGROUP BY category\nORDER BY product_sales DESC\nLIMIT 5"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "category": "health_beauty",
+          "product_sales_amount": 1258681.34
+        },
+        {
+          "category": "watches_gifts",
+          "product_sales_amount": 1205005.68
+        },
+        {
+          "category": "bed_bath_table",
+          "product_sales_amount": 1036988.68
+        },
+        {
+          "category": "sports_leisure",
+          "product_sales_amount": 988048.97
+        },
+        {
+          "category": "computers_accessories",
+          "product_sales_amount": 911954.32
+        }
+      ],
+      "expected_rows": [
+        {
+          "category": "health_beauty",
+          "product_sales_amount": 1258681.34
+        },
+        {
+          "category": "watches_gifts",
+          "product_sales_amount": 1205005.68
+        },
+        {
+          "category": "bed_bath_table",
+          "product_sales_amount": 1036988.68
+        },
+        {
+          "category": "sports_leisure",
+          "product_sales_amount": 988048.97
+        },
+        {
+          "category": "computers_accessories",
+          "product_sales_amount": 911954.32
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT COALESCE(ct.product_category_name_english, p.product_category_name, 'unknown') AS category,\n       ROUND(SUM(CAST(oi.price AS REAL)), 2) AS product_sales,\n       COUNT(*) AS item_rows\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nLEFT JOIN category_translation ct ON p.product_category_name = ct.product_category_name\nGROUP BY category\nORDER BY product_sales DESC\nLIMIT 5",
+      "answer": "按商品销售额（order_items.price 求和）排序，前 5 个品类如下：\n\n| 排名 | 品类 | 商品销售额 (BRL) | 商品条目数 |\n|---|---|---|---|\n| 1 | health_beauty | 1,258,681.34 | 9,670 |\n| 2 | watches_gifts | 1,205,005.68 | 5,991 |\n| 3 | bed_bath_table | 1,036,988.68 | 11,115 |\n| 4 | sports_leisure | 988,048.97 | 8,641 |\n| 5 | computers_accessories | 911,954.32 | 7,827 |\n\n口径与说明：\n- 指标采用「商品销售额」= SUM(order_items.price)，即商品价格合计，**不含运费**，与 GMV（payments.payment_value 求和）不是同一口径。\n- 数据来源：order_items → products → category_translation（LEFT JOIN 保留未翻译品类），按品类名称聚合。\n- 未加订单状态过滤，因此包含所有状态的订单（按指标定义默认口径）。",
+      "latency_seconds": 8.926,
+      "token_usage": {
+        "prompt_tokens": 5100,
+        "completion_tokens": 524,
+        "total_tokens": 5624
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT COALESCE(ct.product_category_name_english, p.product_category_name, 'unknown') AS category,\n       ROUND(SUM(CAST(oi.price AS REAL)), 2) AS product_sales,\n       COUNT(*) AS item_rows\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nLEFT JOIN category_translation ct ON p.product_category_name = ct.product_category_name\nGROUP BY category\nORDER BY product_sales DESC\nLIMIT 5",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "category": "health_beauty",
+              "product_sales": 1258681.34,
+              "item_rows": 9670
+            },
+            {
+              "category": "watches_gifts",
+              "product_sales": 1205005.68,
+              "item_rows": 5991
+            },
+            {
+              "category": "bed_bath_table",
+              "product_sales": 1036988.68,
+              "item_rows": 11115
+            },
+            {
+              "category": "sports_leisure",
+              "product_sales": 988048.97,
+              "item_rows": 8641
+            },
+            {
+              "category": "computers_accessories",
+              "product_sales": 911954.32,
+              "item_rows": 7827
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "category": "health_beauty",
+              "product_sales_amount": 1258681.34
+            },
+            {
+              "category": "watches_gifts",
+              "product_sales_amount": 1205005.68
+            },
+            {
+              "category": "bed_bath_table",
+              "product_sales_amount": 1036988.68
+            },
+            {
+              "category": "sports_leisure",
+              "product_sales_amount": 988048.97
+            },
+            {
+              "category": "computers_accessories",
+              "product_sales_amount": 911954.32
+            }
+          ],
+          "expected_rows": [
+            {
+              "category": "health_beauty",
+              "product_sales_amount": 1258681.34
+            },
+            {
+              "category": "watches_gifts",
+              "product_sales_amount": 1205005.68
+            },
+            {
+              "category": "bed_bath_table",
+              "product_sales_amount": 1036988.68
+            },
+            {
+              "category": "sports_leisure",
+              "product_sales_amount": 988048.97
+            },
+            {
+              "category": "computers_accessories",
+              "product_sales_amount": 911954.32
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "category": "health_beauty",
+              "product_sales_amount": 1258681.34
+            },
+            {
+              "category": "watches_gifts",
+              "product_sales_amount": 1205005.68
+            },
+            {
+              "category": "bed_bath_table",
+              "product_sales_amount": 1036988.68
+            },
+            {
+              "category": "sports_leisure",
+              "product_sales_amount": 988048.97
+            },
+            {
+              "category": "computers_accessories",
+              "product_sales_amount": 911954.32
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "category": "health_beauty",
+          "product_sales_amount": 1258681.34
+        },
+        {
+          "category": "watches_gifts",
+          "product_sales_amount": 1205005.68
+        },
+        {
+          "category": "bed_bath_table",
+          "product_sales_amount": 1036988.68
+        },
+        {
+          "category": "sports_leisure",
+          "product_sales_amount": 988048.97
+        },
+        {
+          "category": "computers_accessories",
+          "product_sales_amount": 911954.32
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 10,
+        "total_values": 10,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "seller_sales_top5",
+      "question": "按商品销售额统计，销售额最高的 5 个卖家是谁？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT oi.seller_id, s.seller_city, s.seller_state, ROUND(SUM(CAST(oi.price AS REAL)), 2) AS product_sales_amount FROM order_items AS oi LEFT JOIN sellers AS s ON oi.seller_id = s.seller_id GROUP BY oi.seller_id, s.seller_city, s.seller_state ORDER BY product_sales_amount DESC LIMIT 5;"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "seller_id": "4869f7a5dfa277a7dca6462dcf3b52b2",
+          "product_sales_amount": 229472.63
+        },
+        {
+          "seller_id": "53243585a1d6dc2643021fd1853d8905",
+          "product_sales_amount": 222776.05
+        },
+        {
+          "seller_id": "4a3ca9315b744ce9f8e9374361493884",
+          "product_sales_amount": 200472.92
+        },
+        {
+          "seller_id": "fa1c13f2614d7b5c4749cbc52fecda94",
+          "product_sales_amount": 194042.03
+        },
+        {
+          "seller_id": "7c67e1448b00f6e969d365cea6b010ab",
+          "product_sales_amount": 187923.89
+        }
+      ],
+      "expected_rows": [
+        {
+          "seller_id": "4869f7a5dfa277a7dca6462dcf3b52b2",
+          "product_sales_amount": 229472.63,
+          "order_count": 1132
+        },
+        {
+          "seller_id": "53243585a1d6dc2643021fd1853d8905",
+          "product_sales_amount": 222776.05,
+          "order_count": 358
+        },
+        {
+          "seller_id": "4a3ca9315b744ce9f8e9374361493884",
+          "product_sales_amount": 200472.92,
+          "order_count": 1806
+        },
+        {
+          "seller_id": "fa1c13f2614d7b5c4749cbc52fecda94",
+          "product_sales_amount": 194042.03,
+          "order_count": 585
+        },
+        {
+          "seller_id": "7c67e1448b00f6e969d365cea6b010ab",
+          "product_sales_amount": 187923.89,
+          "order_count": 982
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT oi.seller_id, s.seller_city, s.seller_state, ROUND(SUM(CAST(oi.price AS REAL)), 2) AS product_sales_amount FROM order_items AS oi LEFT JOIN sellers AS s ON oi.seller_id = s.seller_id GROUP BY oi.seller_id, s.seller_city, s.seller_state ORDER BY product_sales_amount DESC LIMIT 5;",
+      "answer": "按**商品销售额**（`order_items.price` 之和，不含运费，包含所有订单状态）统计，销售额最高的 5 个卖家如下：\n\n| 排名 | 卖家 ID | 所在城市/州 | 商品销售额 |\n|---:|---|---|---:|\n| 1 | 4869f7a5dfa277a7dca6462dcf3b52b2 | Guariba / SP | R$ 229,472.63 |\n| 2 | 53243585a1d6dc2643021fd1853d8905 | Lauro de Freitas / BA | R$ 222,776.05 |\n| 3 | 4a3ca9315b744ce9f8e9374361493884 | Ibitinga / SP | R$ 200,472.92 |\n| 4 | fa1c13f2614d7b5c4749cbc52fecda94 | Sumaré / SP | R$ 194,042.03 |\n| 5 | 7c67e1448b00f6e969d365cea6b010ab | Itaquaquecetuba / SP | R$ 187,923.89 |\n\n**口径说明：** 数据来自 `order_items` 与 `sellers` 表，按卖家汇总 `SUM(price)`；未添加订单状态过滤，也未计入 `freight_value`。",
+      "latency_seconds": 9.025,
+      "token_usage": {
+        "prompt_tokens": 5249,
+        "completion_tokens": 662,
+        "total_tokens": 5911
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT oi.seller_id, s.seller_city, s.seller_state, ROUND(SUM(CAST(oi.price AS REAL)), 2) AS product_sales_amount FROM order_items AS oi LEFT JOIN sellers AS s ON oi.seller_id = s.seller_id GROUP BY oi.seller_id, s.seller_city, s.seller_state ORDER BY product_sales_amount DESC LIMIT 5;",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "seller_id": "4869f7a5dfa277a7dca6462dcf3b52b2",
+              "seller_city": "guariba",
+              "seller_state": "SP",
+              "product_sales_amount": 229472.63
+            },
+            {
+              "seller_id": "53243585a1d6dc2643021fd1853d8905",
+              "seller_city": "lauro de freitas",
+              "seller_state": "BA",
+              "product_sales_amount": 222776.05
+            },
+            {
+              "seller_id": "4a3ca9315b744ce9f8e9374361493884",
+              "seller_city": "ibitinga",
+              "seller_state": "SP",
+              "product_sales_amount": 200472.92
+            },
+            {
+              "seller_id": "fa1c13f2614d7b5c4749cbc52fecda94",
+              "seller_city": "sumare",
+              "seller_state": "SP",
+              "product_sales_amount": 194042.03
+            },
+            {
+              "seller_id": "7c67e1448b00f6e969d365cea6b010ab",
+              "seller_city": "itaquaquecetuba",
+              "seller_state": "SP",
+              "product_sales_amount": 187923.89
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "seller_id": "4869f7a5dfa277a7dca6462dcf3b52b2",
+              "product_sales_amount": 229472.63
+            },
+            {
+              "seller_id": "53243585a1d6dc2643021fd1853d8905",
+              "product_sales_amount": 222776.05
+            },
+            {
+              "seller_id": "4a3ca9315b744ce9f8e9374361493884",
+              "product_sales_amount": 200472.92
+            },
+            {
+              "seller_id": "fa1c13f2614d7b5c4749cbc52fecda94",
+              "product_sales_amount": 194042.03
+            },
+            {
+              "seller_id": "7c67e1448b00f6e969d365cea6b010ab",
+              "product_sales_amount": 187923.89
+            }
+          ],
+          "expected_rows": [
+            {
+              "seller_id": "4869f7a5dfa277a7dca6462dcf3b52b2",
+              "product_sales_amount": 229472.63,
+              "order_count": 1132
+            },
+            {
+              "seller_id": "53243585a1d6dc2643021fd1853d8905",
+              "product_sales_amount": 222776.05,
+              "order_count": 358
+            },
+            {
+              "seller_id": "4a3ca9315b744ce9f8e9374361493884",
+              "product_sales_amount": 200472.92,
+              "order_count": 1806
+            },
+            {
+              "seller_id": "fa1c13f2614d7b5c4749cbc52fecda94",
+              "product_sales_amount": 194042.03,
+              "order_count": 585
+            },
+            {
+              "seller_id": "7c67e1448b00f6e969d365cea6b010ab",
+              "product_sales_amount": 187923.89,
+              "order_count": 982
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "seller_id": "4869f7a5dfa277a7dca6462dcf3b52b2",
+              "product_sales_amount": 229472.63
+            },
+            {
+              "seller_id": "53243585a1d6dc2643021fd1853d8905",
+              "product_sales_amount": 222776.05
+            },
+            {
+              "seller_id": "4a3ca9315b744ce9f8e9374361493884",
+              "product_sales_amount": 200472.92
+            },
+            {
+              "seller_id": "fa1c13f2614d7b5c4749cbc52fecda94",
+              "product_sales_amount": 194042.03
+            },
+            {
+              "seller_id": "7c67e1448b00f6e969d365cea6b010ab",
+              "product_sales_amount": 187923.89
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "seller_id": "4869f7a5dfa277a7dca6462dcf3b52b2",
+          "product_sales_amount": 229472.63
+        },
+        {
+          "seller_id": "53243585a1d6dc2643021fd1853d8905",
+          "product_sales_amount": 222776.05
+        },
+        {
+          "seller_id": "4a3ca9315b744ce9f8e9374361493884",
+          "product_sales_amount": 200472.92
+        },
+        {
+          "seller_id": "fa1c13f2614d7b5c4749cbc52fecda94",
+          "product_sales_amount": 194042.03
+        },
+        {
+          "seller_id": "7c67e1448b00f6e969d365cea6b010ab",
+          "product_sales_amount": 187923.89
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 10,
+        "total_values": 10,
+        "coverage": 1.0,
+        "missing": []
+      }
+    },
+    {
+      "id": "late_rate_by_month",
+      "question": "按下单月份统计延迟送达率，最高的 5 个月是哪几个月？",
+      "tool_steps": [
+        {
+          "tool": "get_metric_definitions",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "get_database_schema",
+          "error": null,
+          "sql": null
+        },
+        {
+          "tool": "run_read_only_sql",
+          "error": null,
+          "sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS purchase_month,\n       COUNT(DISTINCT CASE WHEN order_delivered_customer_date > order_estimated_delivery_date THEN order_id END) AS late_orders,\n       COUNT(DISTINCT order_id) AS delivered_orders_with_dates,\n       ROUND(1.0 * COUNT(DISTINCT CASE WHEN order_delivered_customer_date > order_estimated_delivery_date THEN order_id END) / COUNT(DISTINCT order_id), 4) AS late_delivery_rate\nFROM orders\nWHERE order_status = 'delivered'\n  AND order_purchase_timestamp IS NOT NULL\n  AND order_delivered_customer_date IS NOT NULL\n  AND order_estimated_delivery_date IS NOT NULL\nGROUP BY strftime('%Y-%m', order_purchase_timestamp)\nORDER BY late_delivery_rate DESC, purchase_month ASC\nLIMIT 5;"
+        }
+      ],
+      "sql_executed": true,
+      "result_match": true,
+      "compared_actual_rows": [
+        {
+          "order_month": "2016-09",
+          "delayed_order_rate": 100.0
+        },
+        {
+          "order_month": "2018-03",
+          "delayed_order_rate": 21.36
+        },
+        {
+          "order_month": "2018-02",
+          "delayed_order_rate": 15.99
+        },
+        {
+          "order_month": "2017-11",
+          "delayed_order_rate": 14.31
+        },
+        {
+          "order_month": "2018-08",
+          "delayed_order_rate": 10.39
+        }
+      ],
+      "expected_rows": [
+        {
+          "order_month": "2016-09",
+          "delayed_order_rate": 100.0
+        },
+        {
+          "order_month": "2018-03",
+          "delayed_order_rate": 21.36
+        },
+        {
+          "order_month": "2018-02",
+          "delayed_order_rate": 15.99
+        },
+        {
+          "order_month": "2017-11",
+          "delayed_order_rate": 14.31
+        },
+        {
+          "order_month": "2018-08",
+          "delayed_order_rate": 10.39
+        }
+      ],
+      "comparison_error": null,
+      "generated_sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS purchase_month,\n       COUNT(DISTINCT CASE WHEN order_delivered_customer_date > order_estimated_delivery_date THEN order_id END) AS late_orders,\n       COUNT(DISTINCT order_id) AS delivered_orders_with_dates,\n       ROUND(1.0 * COUNT(DISTINCT CASE WHEN order_delivered_customer_date > order_estimated_delivery_date THEN order_id END) / COUNT(DISTINCT order_id), 4) AS late_delivery_rate\nFROM orders\nWHERE order_status = 'delivered'\n  AND order_purchase_timestamp IS NOT NULL\n  AND order_delivered_customer_date IS NOT NULL\n  AND order_estimated_delivery_date IS NOT NULL\nGROUP BY strftime('%Y-%m', order_purchase_timestamp)\nORDER BY late_delivery_rate DESC, purchase_month ASC\nLIMIT 5;",
+      "answer": "按**下单月份**统计，延迟送达定义为：已送达订单中，实际送达时间晚于预计送达日期。\n\n筛选口径：`order_status = 'delivered'`，且下单、实际送达、预计送达时间均非空。分母为符合上述条件的已送达订单数。\n\n| 排名 | 下单月份 | 延迟订单数 | 有效分母 | 延迟送达率 |\n|---|---|---:|---:|---:|\n| 1 | 2016-09 | 1 | 1 | 100.00% |\n| 2 | 2018-03 | 1,496 | 7,003 | 21.36% |\n| 3 | 2018-02 | 1,048 | 6,555 | 15.99% |\n| 4 | 2017-11 | 1,043 | 7,288 | 14.31% |\n| 5 | 2018-08 | 660 | 6,351 | 10.39% |\n\n注意：**2016-09 仅有 1 笔有效订单**，虽排名第一，但样本极小，不宜据此作业务判断。数据来源为 `orders` 表。",
+      "latency_seconds": 8.329,
+      "token_usage": {
+        "prompt_tokens": 5342,
+        "completion_tokens": 785,
+        "total_tokens": 6127
+      },
+      "query_attempts": [
+        {
+          "index": 0,
+          "sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS purchase_month,\n       COUNT(DISTINCT CASE WHEN order_delivered_customer_date > order_estimated_delivery_date THEN order_id END) AS late_orders,\n       COUNT(DISTINCT order_id) AS delivered_orders_with_dates,\n       ROUND(1.0 * COUNT(DISTINCT CASE WHEN order_delivered_customer_date > order_estimated_delivery_date THEN order_id END) / COUNT(DISTINCT order_id), 4) AS late_delivery_rate\nFROM orders\nWHERE order_status = 'delivered'\n  AND order_purchase_timestamp IS NOT NULL\n  AND order_delivered_customer_date IS NOT NULL\n  AND order_estimated_delivery_date IS NOT NULL\nGROUP BY strftime('%Y-%m', order_purchase_timestamp)\nORDER BY late_delivery_rate DESC, purchase_month ASC\nLIMIT 5;",
+          "result_match": true,
+          "actual_rows": [
+            {
+              "purchase_month": "2016-09",
+              "late_orders": 1,
+              "delivered_orders_with_dates": 1,
+              "late_delivery_rate": 1.0
+            },
+            {
+              "purchase_month": "2018-03",
+              "late_orders": 1496,
+              "delivered_orders_with_dates": 7003,
+              "late_delivery_rate": 0.2136
+            },
+            {
+              "purchase_month": "2018-02",
+              "late_orders": 1048,
+              "delivered_orders_with_dates": 6555,
+              "late_delivery_rate": 0.1599
+            },
+            {
+              "purchase_month": "2017-11",
+              "late_orders": 1043,
+              "delivered_orders_with_dates": 7288,
+              "late_delivery_rate": 0.1431
+            },
+            {
+              "purchase_month": "2018-08",
+              "late_orders": 660,
+              "delivered_orders_with_dates": 6351,
+              "late_delivery_rate": 0.1039
+            }
+          ],
+          "compared_actual_rows": [
+            {
+              "order_month": "2016-09",
+              "delayed_order_rate": 100.0
+            },
+            {
+              "order_month": "2018-03",
+              "delayed_order_rate": 21.36
+            },
+            {
+              "order_month": "2018-02",
+              "delayed_order_rate": 15.99
+            },
+            {
+              "order_month": "2017-11",
+              "delayed_order_rate": 14.31
+            },
+            {
+              "order_month": "2018-08",
+              "delayed_order_rate": 10.39
+            }
+          ],
+          "expected_rows": [
+            {
+              "order_month": "2016-09",
+              "delayed_order_rate": 100.0
+            },
+            {
+              "order_month": "2018-03",
+              "delayed_order_rate": 21.36
+            },
+            {
+              "order_month": "2018-02",
+              "delayed_order_rate": 15.99
+            },
+            {
+              "order_month": "2017-11",
+              "delayed_order_rate": 14.31
+            },
+            {
+              "order_month": "2018-08",
+              "delayed_order_rate": 10.39
+            }
+          ],
+          "compared_expected_rows": [
+            {
+              "order_month": "2016-09",
+              "delayed_order_rate": 100.0
+            },
+            {
+              "order_month": "2018-03",
+              "delayed_order_rate": 21.36
+            },
+            {
+              "order_month": "2018-02",
+              "delayed_order_rate": 15.99
+            },
+            {
+              "order_month": "2017-11",
+              "delayed_order_rate": 14.31
+            },
+            {
+              "order_month": "2018-08",
+              "delayed_order_rate": 10.39
+            }
+          ],
+          "comparison_error": null
+        }
+      ],
+      "last_query_result_match": true,
+      "compared_expected_rows": [
+        {
+          "order_month": "2016-09",
+          "delayed_order_rate": 100.0
+        },
+        {
+          "order_month": "2018-03",
+          "delayed_order_rate": 21.36
+        },
+        {
+          "order_month": "2018-02",
+          "delayed_order_rate": 15.99
+        },
+        {
+          "order_month": "2017-11",
+          "delayed_order_rate": 14.31
+        },
+        {
+          "order_month": "2018-08",
+          "delayed_order_rate": 10.39
+        }
+      ],
+      "gold_value_mention_coverage": {
+        "matched_values": 10,
+        "total_values": 10,
+        "coverage": 1.0,
+        "missing": []
+      }
+    }
+  ],
+  "note": "Every saved successful Agent SQL query was re-executed locally against the gold SQL. A case is a result match when at least one successful query matches. No model API calls were made during this rescore. gold_value_mention_coverage checks whether expected values appear in final text; it is a mention check, not semantic answer validation."
+}

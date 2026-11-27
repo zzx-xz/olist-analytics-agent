@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+data/raw/*
+!data/raw/.gitkeep
+data/olist.db
+data/agent_state.sqlite3
+data/agent_state.sqlite3-shm
+data/agent_state.sqlite3-wal

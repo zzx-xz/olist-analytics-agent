@@ -1,0 +1,62 @@
+[
+  {
+    "id": "orders_total",
+    "question": "这份数据一共有多少个不同订单？",
+    "gold_sql": "SELECT COUNT(DISTINCT order_id) AS order_count FROM orders"
+  },
+  {
+    "id": "gmv_total",
+    "question": "按项目定义，平台总 GMV 是多少？",
+    "gold_sql": "SELECT ROUND(SUM(CAST(payment_value AS REAL)), 2) AS gmv FROM payments"
+  },
+  {
+    "id": "repeat_user_rate",
+    "question": "复购用户率是多少？请按真实用户 customer_unique_id 计算。",
+    "gold_sql": "SELECT ROUND(100.0 * SUM(CASE WHEN order_count >= 2 THEN 1 ELSE 0 END) / COUNT(*), 2) AS repeat_user_rate FROM (SELECT c.customer_unique_id, COUNT(DISTINCT o.order_id) AS order_count FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_unique_id)"
+  },
+  {
+    "id": "late_delivery_rate",
+    "question": "总体延迟送达率是多少？",
+    "gold_sql": "SELECT ROUND(100.0 * SUM(CASE WHEN datetime(order_delivered_customer_date) > datetime(order_estimated_delivery_date) THEN 1 ELSE 0 END) / COUNT(DISTINCT order_id), 2) AS delayed_order_rate FROM orders WHERE order_status = 'delivered' AND order_purchase_timestamp IS NOT NULL AND order_delivered_customer_date IS NOT NULL AND order_estimated_delivery_date IS NOT NULL"
+  },
+  {
+    "id": "review_average",
+    "question": "平均评价分是多少？",
+    "gold_sql": "SELECT ROUND(AVG(CAST(review_score AS REAL)), 2) AS average_review_score FROM reviews WHERE review_score IS NOT NULL"
+  },
+  {
+    "id": "negative_review_rate",
+    "question": "项目把评分不高于 2 分定义为差评，差评率是多少？",
+    "gold_sql": "SELECT ROUND(100.0 * COUNT(DISTINCT CASE WHEN CAST(review_score AS INTEGER) <= 2 THEN order_id END) / COUNT(DISTINCT CASE WHEN review_score IS NOT NULL AND TRIM(review_score) <> '' THEN order_id END), 2) AS negative_review_rate FROM reviews"
+  },
+  {
+    "id": "state_gmv_top5",
+    "question": "按州汇总 GMV，最高的 5 个州和金额分别是什么？",
+    "gold_sql": "SELECT c.customer_state AS customer_state, ROUND(SUM(CAST(p.payment_value AS REAL)), 2) AS gmv FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN payments p ON o.order_id = p.order_id GROUP BY c.customer_state ORDER BY gmv DESC, customer_state LIMIT 5"
+  },
+  {
+    "id": "monthly_orders_top5",
+    "question": "按下单月份统计订单数，订单数最高的 5 个月是哪些？",
+    "gold_sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS order_month, COUNT(DISTINCT order_id) AS order_count FROM orders WHERE order_purchase_timestamp IS NOT NULL GROUP BY order_month ORDER BY order_count DESC, order_month LIMIT 5"
+  },
+  {
+    "id": "payment_type_gmv",
+    "question": "不同支付方式各自贡献了多少 GMV？",
+    "gold_sql": "SELECT payment_type, ROUND(SUM(CAST(payment_value AS REAL)), 2) AS gmv FROM payments GROUP BY payment_type ORDER BY gmv DESC"
+  },
+  {
+    "id": "category_sales_top5",
+    "question": "按商品销售额排序，销售额最高的 5 个品类是什么？",
+    "gold_sql": "SELECT COALESCE(t.product_category_name_english, p.product_category_name, 'unknown') AS category, ROUND(SUM(CAST(i.price AS REAL)), 2) AS product_sales_amount FROM order_items i JOIN products p ON i.product_id = p.product_id LEFT JOIN category_translation t ON p.product_category_name = t.product_category_name GROUP BY category ORDER BY product_sales_amount DESC, category LIMIT 5"
+  },
+  {
+    "id": "seller_sales_top5",
+    "question": "按商品销售额统计，销售额最高的 5 个卖家是谁？",
+    "gold_sql": "SELECT seller_id, ROUND(SUM(CAST(price AS REAL)), 2) AS product_sales_amount, COUNT(DISTINCT order_id) AS order_count FROM order_items GROUP BY seller_id ORDER BY product_sales_amount DESC, seller_id LIMIT 5"
+  },
+  {
+    "id": "late_rate_by_month",
+    "question": "按下单月份统计延迟送达率，最高的 5 个月是哪几个月？",
+    "gold_sql": "SELECT strftime('%Y-%m', order_purchase_timestamp) AS order_month, ROUND(100.0 * SUM(CASE WHEN datetime(order_delivered_customer_date) > datetime(order_estimated_delivery_date) THEN 1 ELSE 0 END) / COUNT(DISTINCT order_id), 2) AS delayed_order_rate FROM orders WHERE order_status = 'delivered' AND order_purchase_timestamp IS NOT NULL AND order_delivered_customer_date IS NOT NULL AND order_estimated_delivery_date IS NOT NULL GROUP BY order_month ORDER BY delayed_order_rate DESC, order_month LIMIT 5"
+  }
+]

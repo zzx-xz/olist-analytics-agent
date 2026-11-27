@@ -1,0 +1,36 @@
+{
+  "evaluation_mode": "local_rescore_of_saved_agent_sql",
+  "suites": [
+    {
+      "benchmark": "benchmark.json",
+      "total_cases": 12,
+      "sql_execution_rate": 1.0,
+      "sql_result_match_rate": 1.0,
+      "median_latency_seconds": 8.835,
+      "report": "evaluation/results/latest.json"
+    },
+    {
+      "benchmark": "benchmark_challenge.json",
+      "total_cases": 7,
+      "sql_execution_rate": 1.0,
+      "sql_result_match_rate": 1.0,
+      "median_latency_seconds": 9.152,
+      "report": "evaluation/results/challenge.json"
+    }
+  ],
+  "total_cases": 19,
+  "sql_execution_rate": 1.0,
+  "sql_result_match_rate": 1.0,
+  "median_latency_seconds": 8.991,
+  "token_usage_total": {
+    "prompt_tokens": 97971,
+    "completion_tokens": 9332,
+    "total_tokens": 107303
+  },
+  "gold_value_mention_coverage": {
+    "matched_values": 123,
+    "total_values": 123,
+    "coverage": 1.0
+  },
+  "note": "A question is counted as a result match when at least one successful SQL tool result in its trace matches the gold SQL projection; query_attempts preserves all successful SQL attempts. The 19-item set is hand-written, not an estimate of accuracy on arbitrary questions. The gold value mention coverage is a formatting-tolerant presence check, not a semantic validation of answer text."
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "state_order_count_top5",
+    "question": "按客户所在州统计不同订单数，订单数最高的 5 个州是什么？同一订单即使有多件商品或多条支付记录也只能计一次。",
+    "gold_sql": "SELECT c.customer_state AS customer_state, COUNT(DISTINCT o.order_id) AS order_count FROM orders o JOIN customers c ON c.customer_id = o.customer_id GROUP BY c.customer_state ORDER BY order_count DESC, customer_state LIMIT 5"
+  },
+  {
+    "id": "credit_card_gmv_2018_top3",
+    "question": "按订单下单时间归属月份，统计 2018 年各月信用卡支付的 GMV，列出最高的 3 个月。GMV 使用 payments.payment_value，不筛订单状态。",
+    "gold_sql": "SELECT strftime('%Y-%m', o.order_purchase_timestamp) AS order_month, ROUND(SUM(CAST(p.payment_value AS REAL)), 2) AS gmv FROM orders o JOIN payments p ON p.order_id = o.order_id WHERE p.payment_type = 'credit_card' AND o.order_purchase_timestamp >= '2018-01-01' AND o.order_purchase_timestamp < '2019-01-01' GROUP BY order_month ORDER BY gmv DESC, order_month LIMIT 3"
+  },
+  {
+    "id": "delivery_days_by_state_top5",
+    "question": "仅看已送达且下单时间、送达时间都不为空的订单，按客户州计算从下单到客户收到货的平均天数；只保留至少 500 笔订单的州，列出平均天数最长的 5 个州。",
+    "gold_sql": "SELECT c.customer_state AS customer_state, ROUND(AVG(julianday(o.order_delivered_customer_date) - julianday(o.order_purchase_timestamp)), 2) AS avg_delivery_days, COUNT(DISTINCT o.order_id) AS delivered_orders FROM orders o JOIN customers c ON c.customer_id = o.customer_id WHERE o.order_status = 'delivered' AND o.order_purchase_timestamp IS NOT NULL AND o.order_delivered_customer_date IS NOT NULL GROUP BY c.customer_state HAVING COUNT(DISTINCT o.order_id) >= 500 ORDER BY avg_delivery_days DESC, customer_state LIMIT 5"
+  },
+  {
+    "id": "cancellation_rate_august_2018",
+    "question": "2018 年 8 月的取消率是多少？分母是该月所有有下单时间的不同订单，分子是其中 order_status 为 canceled 的不同订单。请返回百分比。",
+    "gold_sql": "SELECT ROUND(100.0 * COUNT(DISTINCT CASE WHEN order_status = 'canceled' THEN order_id END) / COUNT(DISTINCT order_id), 2) AS cancellation_rate_pct, COUNT(DISTINCT CASE WHEN order_status = 'canceled' THEN order_id END) AS canceled_orders, COUNT(DISTINCT order_id) AS total_orders FROM orders WHERE order_purchase_timestamp >= '2018-08-01' AND order_purchase_timestamp < '2018-09-01' AND order_purchase_timestamp IS NOT NULL"
+  },
+  {
+    "id": "category_review_average_top5",
+    "question": "按商品品类统计平均评价分，返回评分最高的 5 个品类。为避免同一订单在同一品类中有多件商品导致重复计权，每个订单在每个品类中只计算一次；一个订单有多条评价时，先取该订单评价分的平均值。",
+    "gold_sql": "WITH order_reviews AS (SELECT order_id, AVG(CAST(review_score AS REAL)) AS order_review_score FROM reviews WHERE review_score IS NOT NULL AND TRIM(CAST(review_score AS TEXT)) <> '' GROUP BY order_id), order_categories AS (SELECT DISTINCT oi.order_id, COALESCE(t.product_category_name_english, p.product_category_name, 'unknown') AS category FROM order_items oi JOIN products p ON p.product_id = oi.product_id LEFT JOIN category_translation t ON t.product_category_name = p.product_category_name) SELECT oc.category AS category, ROUND(AVG(r.order_review_score), 2) AS avg_review_score, COUNT(DISTINCT oc.order_id) AS reviewed_orders FROM order_categories oc JOIN order_reviews r ON r.order_id = oc.order_id GROUP BY oc.category ORDER BY avg_review_score DESC, reviewed_orders DESC, category LIMIT 5"
+  },
+  {
+    "id": "seller_state_product_sales_top5",
+    "question": "按卖家所在州统计商品销售额，返回最高的 5 个州及金额。商品销售额按 order_items.price 求和，不包含 freight_value，也不按订单状态筛选。",
+    "gold_sql": "SELECT s.seller_state AS seller_state, ROUND(SUM(CAST(i.price AS REAL)), 2) AS product_sales_amount FROM order_items i JOIN sellers s ON s.seller_id = i.seller_id GROUP BY s.seller_state ORDER BY product_sales_amount DESC, seller_state LIMIT 5"
+  },
+  {
+    "id": "payment_type_distinct_orders",
+    "question": "按支付方式统计各自涉及的不同订单数。一个订单的多条同类支付记录只能计作一单；如果一个订单使用多种支付方式，它可以分别计入这些方式。",
+    "gold_sql": "SELECT payment_type, COUNT(DISTINCT order_id) AS order_count FROM payments GROUP BY payment_type ORDER BY order_count DESC, payment_type"
+  }
+]

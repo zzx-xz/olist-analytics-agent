@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Olist 经营分析 Agent</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand-mark">OA</div>
+      <div>
+        <p class="eyebrow">OLIST ANALYTICS COPILOT</p>
+        <h1>经营分析 Agent</h1>
+      </div>
+      <span class="status"><span></span> 本地数据 · 只读查询</span>
+    </header>
+    <section class="intro">
+      <p class="eyebrow">ASK WITH BUSINESS LANGUAGE</p>
+      <h2>让数据问题更容易回答</h2>
+      <p>Agent 会根据指标口径查询 Olist 数据，并展示 SQL 依据。</p>
+      <div class="suggestions">
+        <button type="button">哪个州的 GMV 最高？</button>
+        <button type="button">复购用户占比是多少？</button>
+        <button type="button">延迟订单率按月份怎么变化？</button>
+      </div>
+    </section>
+    <section id="conversation" class="conversation" aria-live="polite">
+      <div class="empty-state">
+        <div class="spark">✦</div>
+        <h3>从一个业务问题开始</h3>
+        <p>回答会附带执行过的 SQL，便于核对口径和数据。</p>
+      </div>
+    </section>
+    <form id="question-form" class="composer">
+      <label class="sr-only" for="question">输入业务问题</label>
+      <textarea id="question" rows="2" maxlength="2000" placeholder="例如：哪个州的 GMV 最高？" required></textarea>
+      <div class="composer-footer">
+        <span id="notice">遇到缺失数据时，Agent 会明确说明。</span>
+        <button id="send" type="submit">发送 <span>↑</span></button>
+      </div>
+      <p class="privacy-note">问题文本和查询结果会发送给 DeepSeek API；原始数据库文件保留在本地。</p>
+    </form>
+    <footer>Olist Analytics Agent · Python · FastAPI · DeepSeek Tool Calling · SQLite</footer>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
